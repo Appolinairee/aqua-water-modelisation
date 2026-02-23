@@ -1,0 +1,155 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #edf1f7;
+  overflow: hidden;
+  font-family: 'Rajdhani', sans-serif;
+  color: #1a2535;
+}
+
+canvas { display: block; }
+/* ── Module Switcher ──────────────────────────────── */
+#module-switcher {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 8px 24px;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.mod-btn {
+  font-family: 'Share Tech Mono'; font-size: 0.70rem;
+  letter-spacing: 0.10em; font-weight: 600;
+  padding: 6px 16px; border-radius: 20px;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  background: transparent; color: #5a7a9a;
+  cursor: pointer; transition: all 0.18s;
+}
+
+.mod-btn:hover:not(:disabled) {
+  border-color: #0066aa; color: #0066aa;
+  background: rgba(0,102,170,0.07);
+}
+
+.mod-btn.active {
+  background: #0066aa; color: #fff;
+  border-color: #0066aa;
+  box-shadow: 0 2px 8px rgba(0,102,170,0.25);
+}
+
+.mod-btn.soon {
+  opacity: 0.35; cursor: default;
+  border-style: dashed;
+}
+/* ── Header ───────────────────────────────────────── */
+#header {
+  position: fixed; top: 46px; left: 0; right: 0; z-index: 10;
+  padding: 10px 24px;
+  background: linear-gradient(to bottom, rgba(237,241,247,0.97), transparent);
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none;
+}
+
+#header h1 {
+  font-size: 1.5rem; font-weight: 700;
+  color: #0066aa; letter-spacing: 0.1em;
+}
+
+#header p {
+  font-size: 0.72rem; color: #5a7a9a;
+  font-family: 'Share Tech Mono'; margin-top: 2px;
+}
+
+#badge {
+  font-family: 'Share Tech Mono'; font-size: 0.72rem; color: #0066aa;
+  border: 1px solid rgba(0,102,170,0.35); padding: 5px 12px;
+  border-radius: 4px; background: rgba(0,102,170,0.06);
+  pointer-events: auto;
+}
+
+/* ── Module label ─────────────────────────────────── */
+#module-label {
+  position: fixed; top: 72px; left: 50%; transform: translateX(-50%);
+  font-family: 'Share Tech Mono'; font-size: 0.8rem;
+  color: #1a7a40; letter-spacing: 0.12em;
+  background: rgba(26,122,64,0.07);
+  border: 1px solid rgba(26,122,64,0.25);
+  padding: 5px 18px; border-radius: 20px;
+  pointer-events: none;
+}
+
+/* ── Controls ─────────────────────────────────────── */
+#controls {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px;
+}
+
+.btn {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(0,0,0,0.12);
+  color: #3a5a7a;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  padding: 8px 18px; border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Rajdhani'; font-size: 0.82rem; font-weight: 600;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn:hover { border-color: #0066aa; color: #0066aa; }
+.btn.on    { border-color: #0066aa; color: #0066aa; background: rgba(0,102,170,0.08); }
+
+/* ── Hint ─────────────────────────────────────────── */
+#hint {
+  position: fixed; bottom: 24px; right: 24px;
+  font-family: 'Share Tech Mono'; font-size: 0.67rem;
+  color: #9aacbc; line-height: 2; text-align: right;
+  pointer-events: none;
+}
+
+/* ── Légende ──────────────────────────────────────── */
+#legend, .legend {
+  position: fixed; bottom: 70px; left: 24px; z-index: 10;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 200px;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.legend-title {
+  font-family: 'Share Tech Mono'; font-size: 0.62rem;
+  color: #7a9ab0; letter-spacing: 0.15em;
+  margin-bottom: 9px;
+}
+
+.legend-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 0.76rem; color: #2a4060;
+  margin-bottom: 5px; line-height: 1.2;
+}
+
+.legend-item:last-child { margin-bottom: 0; }
+
+.lnum {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 17px; height: 17px; min-width: 17px;
+  border: 1.5px solid; border-radius: 50%;
+  font-size: 0.68rem; font-weight: 700;
+  font-family: 'Rajdhani', sans-serif;
+  flex-shrink: 0;
+}
+
+/* Carré couleur pour légende assemblage */
+.lblock {
+  display: inline-block;
+  width: 12px; height: 12px; min-width: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  opacity: 0.88;
+}

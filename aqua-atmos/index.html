@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AQUA-ATMOS — Modélisation 3D</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap"
+            rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+        <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+
+        <!-- ── Switcher modules ────────────────────────────────── -->
+        <div id="module-switcher">
+            <button class="mod-btn active" onclick="window.switchModule('peltier')" data-mod="peltier">MODULE PELTIER</button>
+            <button class="mod-btn" onclick="window.switchModule('sorbant')" data-mod="sorbant">MODULE SORBANT</button>
+            <button class="mod-btn" onclick="window.switchModule('filtration')" data-mod="filtration">FILTRATION</button>
+            <button class="mod-btn soon" disabled data-mod="electronique">ÉLECTRONIQUE</button>
+            <button class="mod-btn" onclick="window.switchModule('assemblage')" data-mod="assemblage">ASSEMBLAGE</button>
+        </div>
+
+        <header id="header">
+            <div>
+                <h1>AQUA-ATMOS</h1>
+                <p>Système hybride de production d'eau atmosphérique</p>
+            </div>
+            <span id="badge">PLBD 35 — ECC — 2026</span>
+        </header>
+
+        <div id="module-label" style="display:none"></div>
+
+        <div id="controls">
+            <button class="btn" id="btn-wire" onclick="window.toggleWire()">⬚
+                Filaire</button>
+            <button class="btn" id="btn-rot" onclick="window.toggleRot()">↻
+                Auto</button>
+            <button class="btn" onclick="window.resetView()">⟳ Reset</button>
+        </div>
+
+        <div id="hint">
+            Clic gauche → Rotation<br>
+            Scroll → Zoom<br>
+            Clic droit → Déplacer
+        </div>
+
+        <!-- Légende PELTIER -->
+        <div id="legend" data-legend="peltier">
+            <div class="legend-title">LÉGENDE — PELTIER</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4ab8e8;color:#4ab8e8">1</span>Face froide TEC (condensation)</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#2a6090;color:#2a6090">2</span>TEC1-12706</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#7a6548;color:#7a6548">3</span>Joint isolation thermique</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#8aaabb;color:#8aaabb">4</span>Fins de dissipation alu</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#5590cc;color:#5590cc">5</span>Ventilateur intérieur (pales courbées)</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#1f8ec2;color:#1f8ec2">6</span>Goutttière plancher + tuyau</div>
+        </div>
+
+        <!-- Légende SORBANT -->
+        <div id="legend-sorbant" class="legend" data-legend="sorbant" style="display:none">
+            <div class="legend-title">LÉGENDE — SORBANT</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#5caddc;color:#5caddc">①</span>Vitre plexiglas 3mm inclinée</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#d4a843;color:#d4a843">②</span>Tissu coton + CaCl₂</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#c06030;color:#c06030">③</span>Nappe chauffante 12V</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4a8c6c;color:#4a8c6c">④</span>Grille inox</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#7a9ab8;color:#7a9ab8">⑤</span>Volets + servo</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#1f8ec2;color:#1f8ec2">⑥</span>Goutttière + tuyau sortie</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#1a8040;color:#1a8040">⑦</span>Capteur DS18B20</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4a9860;color:#4a9860">⑧</span>Capteur DHT22 intérieur</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#c8a020;color:#c8a020">⑨</span>Capteur DHT22 extérieur</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#d4a843;color:#d4a843">⑩</span>Panneau OLED + boutons</div>
+        </div>
+
+        <!-- Légende FILTRATION + RÉSERVOIR -->
+        <div id="legend-filtration" class="legend" data-legend="filtration" style="display:none">
+            <div class="legend-title">LÉGENDE — FILTRATION &amp; RÉSERVOIR</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#2980b9;color:#2980b9">①</span>Débitmètre YF-S201</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#d4af37;color:#d4af37">②</span>Sonde TDS</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#b0bec5;color:#b0bec5">③</span>Filtre 5µm sédiments</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#777;color:#777">④</span>Filtre charbon actif</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#c8a870;color:#c8a870">⑤</span>Filtre calcite (correction pH)</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#29b6f6;color:#29b6f6">⑥</span>Stérilisateur UV-C LED</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4db6ac;color:#4db6ac">⑦</span>Réservoir 5&nbsp;L</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#1565c0;color:#1565c0">⑧</span>HC-SR04 niveau eau</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#c0c0c0;color:#c0c0c0">⑨</span>Robinet sortie</div>
+        </div>
+
+        <!-- Légende ASSEMBLAGE -->
+                <div id="legend-assemblage" class="legend" data-legend="assemblage" style="display:none">
+            <div class="legend-title">LÉGENDE — ASSEMBLAGE COMPLET</div>
+            <div class="legend-item"><span class="lblock" style="background:#78909c"></span>Caisse électronique (batt. 12V · ESP32 · MPPT)</div>
+            <div class="legend-item"><span class="lblock" style="background:#4db6ac"></span>Filtration 4 étapes + Réservoir 5 L</div>
+            <div class="legend-item"><span class="lblock" style="background:#4ab8e8"></span>Module Peltier (condensation)</div>
+            <div class="legend-item"><span class="lblock" style="background:#d4a843"></span>Module Sorbant (CaCl₂ hygroscopique)</div>
+            <div class="legend-item"><span class="lblock" style="background:#f4d03f"></span>Panneau solaire 50 W (externe)</div>
+            <div class="legend-item"><span class="lblock" style="background:#2e86c1"></span>Flux condensat inter-modules</div>
+        </div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4db6ac;color:#4db6ac">①</span>Zone basse — Filtration &amp; Réservoir</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#4ab8e8;color:#4ab8e8">②</span>Module Peltier (condensation)</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#d4a843;color:#d4a843">③</span>Module Sorbant (CaCl₂ hygroscopique)</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#f4d03f;color:#f4d03f">④</span>Panneau solaire 50 W</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#2e86c1;color:#2e86c1">⑤</span>Flux eau : Sorbant → Peltier</div>
+            <div class="legend-item"><span class="lnum" style="border-color:#2e86c1;color:#2e86c1">⑥</span>Flux eau : Peltier → Filtration</div>
+        </div>
+
+        <script type="module" src="main.js"></script>
+    </body>
+</html>
