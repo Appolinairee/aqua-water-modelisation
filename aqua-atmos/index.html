@@ -24,20 +24,15 @@
 
         <!-- ── Switcher modules ────────────────────────────────── -->
         <div id="module-switcher">
-            <button class="mod-btn active" onclick="window.switchModule('peltier')" data-mod="peltier">MODULE PELTIER</button>
-            <button class="mod-btn" onclick="window.switchModule('sorbant')" data-mod="sorbant">MODULE SORBANT</button>
-            <button class="mod-btn" onclick="window.switchModule('filtration')" data-mod="filtration">FILTRATION</button>
-            <button class="mod-btn soon" disabled data-mod="electronique">ÉLECTRONIQUE</button>
-            <button class="mod-btn" onclick="window.switchModule('assemblage')" data-mod="assemblage">ASSEMBLAGE</button>
-        </div>
-
-        <header id="header">
-            <div>
-                <h1>AQUA-ATMOS</h1>
-                <p>Système hybride de production d'eau atmosphérique</p>
+            <span id="title-logo">AQUA-ATMOS</span>
+            <div id="mod-btns">
+                <button class="mod-btn active" onclick="window.switchModule('peltier')" data-mod="peltier">MODULE PELTIER</button>
+                <button class="mod-btn" onclick="window.switchModule('sorbant')" data-mod="sorbant">MODULE SORBANT</button>
+                <button class="mod-btn" onclick="window.switchModule('filtration')" data-mod="filtration">FILTRATION</button>
+                <button class="mod-btn" onclick="window.switchModule('assemblage')" data-mod="assemblage">ASSEMBLAGE</button>
             </div>
-            <span id="badge">PLBD 35 — ECC — 2026</span>
-        </header>
+            <span id="badge">PLBD 35L — ECC — 2026</span>
+        </div>
 
         <div id="module-label" style="display:none"></div>
 

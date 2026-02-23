@@ -11,7 +11,7 @@ canvas { display: block; }
 /* ── Module Switcher ──────────────────────────────── */
 #module-switcher {
   position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: space-between;
   gap: 6px;
   padding: 8px 24px;
   background: rgba(255,255,255,0.96);
@@ -44,35 +44,28 @@ canvas { display: block; }
   opacity: 0.35; cursor: default;
   border-style: dashed;
 }
-/* ── Header ───────────────────────────────────────── */
-#header {
-  position: fixed; top: 46px; left: 0; right: 0; z-index: 10;
-  padding: 10px 24px;
-  background: linear-gradient(to bottom, rgba(237,241,247,0.97), transparent);
-  display: flex; justify-content: space-between; align-items: center;
-  pointer-events: none;
+/* ── Titre + badge inline ─────────────────────────── */
+#title-logo {
+  font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700;
+  color: #0066aa; letter-spacing: 0.14em; white-space: nowrap;
+  flex-shrink: 0;
 }
 
-#header h1 {
-  font-size: 1.5rem; font-weight: 700;
-  color: #0066aa; letter-spacing: 0.1em;
-}
-
-#header p {
-  font-size: 0.72rem; color: #5a7a9a;
-  font-family: 'Share Tech Mono'; margin-top: 2px;
+#mod-btns {
+  display: flex; gap: 6px; align-items: center;
+  flex: 1; justify-content: center;
 }
 
 #badge {
-  font-family: 'Share Tech Mono'; font-size: 0.72rem; color: #0066aa;
-  border: 1px solid rgba(0,102,170,0.35); padding: 5px 12px;
+  font-family: 'Share Tech Mono'; font-size: 0.65rem; color: #0066aa;
+  border: 1px solid rgba(0,102,170,0.35); padding: 4px 10px;
   border-radius: 4px; background: rgba(0,102,170,0.06);
-  pointer-events: auto;
+  white-space: nowrap; flex-shrink: 0;
 }
 
 /* ── Module label ─────────────────────────────────── */
 #module-label {
-  position: fixed; top: 72px; left: 50%; transform: translateX(-50%);
+  position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
   font-family: 'Share Tech Mono'; font-size: 0.8rem;
   color: #1a7a40; letter-spacing: 0.12em;
   background: rgba(26,122,64,0.07);
