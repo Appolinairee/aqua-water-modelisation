@@ -312,68 +312,7 @@ export function buildSorbant() {
   // ─── 13. DHT22 EXTÉRIEUR (paroi droite, discret) ─────
   bx(g, 1.5, 4, 5, M.dht22(), HW + T + 0.1, H_AV * 0.6, -HD + 16);
 
-  // ─── 14. ANNOTATIONS numérotées (réf. légende HTML) ────────────
-  // Ligne courte vers l'extérieur immédiat du composant + disque numéro
-
-  // ① Vitre inclinée 12°
-  annotate(g,
-    new THREE.Vector3(0,     H_MOY + 1,  -HD),
-    new THREE.Vector3(14,    H_MOY + 14, -HD - 10),
-    1, '#4ab3e8');
-
-  // ② Tissu CaCl₂
-  annotate(g,
-    new THREE.Vector3(-HW + 3, T + 7.5, -HD + 4),
-    new THREE.Vector3(-HW - 13, T + 13, -HD - 3),
-    2, '#27ae60');
-
-  // ③ Grille inox
-  annotate(g,
-    new THREE.Vector3(-HW + 3, T + 5.5, -HD + 4),
-    new THREE.Vector3(-HW - 13, T + 7,  -HD - 3),
-    3, '#bfc9ca');
-
-  // ④ Nappe chauffante 12V
-  annotate(g,
-    new THREE.Vector3(-HW + 3, T + 3.5, -HD + 4),
-    new THREE.Vector3(-HW - 13, T + 1,  -HD - 3),
-    4, '#e74c3c');
-
-  // ⑤ Gouttière
-  annotate(g,
-    new THREE.Vector3(0,   gutY,     gutZ),
-    new THREE.Vector3(15,  gutY + 9, gutZ - 9),
-    5, '#1f8ec2');
-
-  // ⑥ Panneau OLED
-  annotate(g,
-    new THREE.Vector3( 16, panY,     panZ - 1),
-    new THREE.Vector3( 20, panY - 9, panZ - 9),
-    6, '#00e5ff');
-
-  // ⑦ Servo vitre
-  annotate(g,
-    new THREE.Vector3(svX,      svY + 2, svZ),
-    new THREE.Vector3(svX + 12, svY - 7, svZ),
-    7, '#95a5a6');
-
-  // ⑧ DS18B20
-  annotate(g,
-    new THREE.Vector3(-10, T + 14,  3),
-    new THREE.Vector3(-23, T + 18, -1),
-    8, '#aaaacc');
-
-  // ⑨ DHT22 int.
-  annotate(g,
-    new THREE.Vector3(12,  T + 14,  2),
-    new THREE.Vector3(25,  T + 18, -1),
-    9, '#ecf0f1');
-
-  // ⑩ Servo volets
-  annotate(g,
-    new THREE.Vector3(HW - T - 1.5, T + 4.5, HD - 8),
-    new THREE.Vector3(HW + 10,      T + 11,  HD + 5),
-    10, '#f39c12');
+  // ─── 14. (annotations supprimées — voir légende HTML) ───────────
 
   return g;
 }

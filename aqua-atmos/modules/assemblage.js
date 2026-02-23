@@ -94,15 +94,31 @@ function buildElec(parent) {
   const EW = 50, EH = 10, ED = 40;
   const EY = EH / 2;
 
-  // Boîtier alu anodisé
-  edgeLine(parent, bx(parent, EW, EH, ED,
-    mat(0x37474f, { roughness: 0.55, metalness: 0.75 }),
-    0, EY, 0), 0x546e7a, 0.80);
-
-  // Panneau avant perforé (face z-)
-  bx(parent, EW, EH, 0.5,
-    mat(0x263238, { roughness: 0.70, metalness: 0.60, opacity: 0.90 }),
-    0, EY, -ED / 2 + 0.25);
+  // ── Boîtier acrylique transparent (6 parois fines) ──────────────
+  // Taille intérieure EW×EH×ED, parois T=0.5
+  const T = 0.5;
+  const acryl = mat(0xc8dff0, { roughness: 0.04, metalness: 0.00, opacity: 0.13 });
+  const acrylFront = mat(0xc8dff0, { roughness: 0.04, metalness: 0.00, opacity: 0.10 });
+  // Face avant (z-)
+  edgeLine(parent, bx(parent, EW, EH, T, acrylFront, 0, EY, -ED/2), 0x90a4ae, 0.95);
+  // Face arrière (z+)
+  edgeLine(parent, bx(parent, EW, EH, T, acryl,      0, EY,  ED/2), 0x90a4ae, 0.70);
+  // Face gauche (x-)
+  bx(parent, T, EH, ED, acryl, -EW/2, EY, 0);
+  // Face droite (x+)
+  bx(parent, T, EH, ED, acryl,  EW/2, EY, 0);
+  // Fond (y=0) — plancher opaque gris anthracite
+  bx(parent, EW, T, ED, mat(0x37474f, { roughness: 0.65, metalness: 0.70 }), 0, T/2, 0);
+  // Couvercle (y=EH) — léger
+  bx(parent, EW, T, ED, acryl, 0, EH - T/2, 0);
+  // Câble solaire entrant (paroi gauche) → MPPT — visible à travers la vitre
+  const pipeMat = new THREE.MeshStandardMaterial({ color: 0xf4d03f, roughness: 0.5, metalness: 0.4 });
+  const solarCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-EW/2 + 1, EY + 2,   2),
+    new THREE.Vector3(-12,        EY + 2,  -3),
+    new THREE.Vector3( 4,         EY + 1.5, -7),
+  ]);
+  parent.add(new THREE.Mesh(new THREE.TubeGeometry(solarCurve, 12, 0.28, 8, false), pipeMat));
 
   // Batterie 12V 7Ah SLA (côté droit)
   edgeLine(parent, bx(parent, 15, 8, 6.5,

@@ -125,32 +125,33 @@ export function buildFiltration() {
   // ── UV-C — x=6 ───────────────────────────────────────────────
   const uvcExitX = mkUVC(g, 6, pipeY);
 
-  // ── Réservoir 5L : x=8..24 (W=16, D=14) ─────────────────────
-  const RX = 16, RW=16, RH=13, RD=14, BY=1.2;  // cx = 16
-  bx(g, RW, RH, RD, M.reserBody(), RX, BY+RH/2, 0);
-  edgeLine(g, bx(g, RW, RH, RD, M.reserEdge(), RX, BY+RH/2, 0), 0x26a69a, 0.72);
-  bx(g, RW-0.5, RH*0.60, RD-0.5, M.eau(), RX, BY+RH*0.30, 0);
-  edgeLine(g, bx(g, RW, 0.6, RD, M.couv(), RX, BY+RH+0.3, 0), 0x546e7a, 0.60);
-  // Raccord entrée eau (depuis UV-C, haut gauche)
-  cy(g, 0.52, 1.6, M.cap(), RX-RW/2+1.5, BY+RH+1.1, 0);
+  // ── Réservoir 5L — poussé vers l'avant (face z- affleure bord footprint) ──
+  // D=36 → z_front = -18  → centre réservoir à z = -18 + RD/2 = -11
+  const RX = 16, RW=16, RH=13, RD=14, RZ=-11, BY=1.2;
+  bx(g, RW, RH, RD, M.reserBody(), RX, BY+RH/2, RZ);
+  edgeLine(g, bx(g, RW, RH, RD, M.reserEdge(), RX, BY+RH/2, RZ), 0x26a69a, 0.72);
+  bx(g, RW-0.5, RH*0.60, RD-0.5, M.eau(), RX, BY+RH*0.30, RZ);
+  edgeLine(g, bx(g, RW, 0.6, RD, M.couv(), RX, BY+RH+0.3, RZ), 0x546e7a, 0.60);
+  // Raccord entrée eau (depuis UV-C, haut)
+  cy(g, 0.52, 1.6, M.cap(), RX-RW/2+1.5, BY+RH+1.1, RZ);
   // HC-SR04 capteur niveau
-  edgeLine(g, bx(g, 3.6, 0.35, 1.5, M.hcPcb(), RX+3, BY+RH+0.7, 0), 0x0d47a1, 0.75);
+  edgeLine(g, bx(g, 3.6, 0.35, 1.5, M.hcPcb(), RX+3, BY+RH+0.7, RZ), 0x0d47a1, 0.75);
   for (const dz of [-0.5, 0.5]) {
-    cy(g, 0.65, 1.0, M.hcCyl(), RX+2.2, BY+RH+1.5, dz);
-    cy(g, 0.65, 1.0, M.hcCyl(), RX+3.8, BY+RH+1.5, dz);
+    cy(g, 0.65, 1.0, M.hcCyl(), RX+2.2, BY+RH+1.5, RZ+dz);
+    cy(g, 0.65, 1.0, M.hcCyl(), RX+3.8, BY+RH+1.5, RZ+dz);
   }
-  // ── ROBINET face avant (z = -RD/2, pointe vers z-) ──────────
-  // rx=Math.PI/2 → cylindre vertical → horizontal le long Z
-  const robZ = -(RD/2 + 2.0);  // sort vers l'avant
+  // ── ROBINET — sort HORS du footprint (robZ < -18) ────────────
+  // Centre réservoir z=-11, face avant à z=-18 → robZ = -11 - 7 - 1.5 = -19.5
+  const robZ = RZ - RD/2 - 1.5;  // ≈ -19.5 → dépasse la face avant du module
   const robY = BY + 3.0;
   cy(g, 0.80, 3.0, M.robinet(), RX, robY, robZ, Math.PI/2);
   // Poignée quart de tour
   bx(g, 0.45, 3.5, 0.45, M.robinet(), RX, robY+1.5, robZ-0.8, 0, 0, 0.4);
-  // Petit tuyau sortie vers l'avant (accessible à l'utilisateur)
+  // Tuyau sortie (pend librement devant le module)
   pipe(g, [
     new THREE.Vector3(RX, robY, robZ - 1.6),
-    new THREE.Vector3(RX, robY - 1.0, robZ - 3.5),
-    new THREE.Vector3(RX, robY - 2.5, robZ - 5.0),
+    new THREE.Vector3(RX, robY - 1.2, robZ - 3.2),
+    new THREE.Vector3(RX, robY - 3.0, robZ - 4.8),
   ], 0.48);
 
   // ── Tuyaux circuit ────────────────────────────────────────────
@@ -184,13 +185,13 @@ export function buildFiltration() {
     new THREE.Vector3(c3.x+0.9, pipeY, 0),
     new THREE.Vector3(6-3.7, pipeY, 0),
   ]);
-  // UV-C → coude → entrée réservoir haut
+  // UV-C → coude → entrée réservoir haut (suit le réservoir en z)
   const entryX = RX - RW/2 + 1.5;
   pipe(g, [
     new THREE.Vector3(uvcExitX, pipeY, 0),
-    new THREE.Vector3(entryX+4, pipeY, 0),
-    new THREE.Vector3(entryX+4, BY+RH+2.0, 0),
-    new THREE.Vector3(entryX, BY+RH+1.1, 0),
+    new THREE.Vector3(entryX+4, pipeY, RZ * 0.4),
+    new THREE.Vector3(entryX+4, BY+RH+2.0, RZ),
+    new THREE.Vector3(entryX,   BY+RH+1.1, RZ),
   ]);
   // Colliers
   for (const cx of [-24, -19, -14, -8, -2, 4, 12])
