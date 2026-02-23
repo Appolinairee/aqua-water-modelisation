@@ -243,7 +243,7 @@ export function buildSorbant() {
       new THREE.Vector3(sx, gutY - 6,  gutZ - 1),
       new THREE.Vector3(sx, gutY - 14, gutZ - 0.5),
     ]);
-    addM(g, new THREE.TubeGeometry(curve, 12, 1.0, 10, false), M.tuyau());
+    addM(g, new THREE.TubeGeometry(curve, 12, 0.60, 10, false), M.tuyau());
   }
 
   // ─── 11. PANNEAU AVANT BAS [OLED + boutons] ───────

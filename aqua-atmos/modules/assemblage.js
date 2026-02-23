@@ -54,9 +54,9 @@ function edgeLine(parent, m, color, op = 0.65) {
   parent.add(ln);
 }
 
-/** Sprite texte (sans numéro, sans ligne) ─ label de module */
-function labelSprite(parent, text, x, y, z, hex = '#a0c8e8') {
-  const CW = 512, CH = 96;
+/** Sprite texte ─ label de module. scaleW : largeur sprite (défaut 32 cm) */
+function labelSprite(parent, text, x, y, z, hex = '#a0c8e8', scaleW = 32) {
+  const CW = Math.round(512 * scaleW / 32), CH = 96;
   const cv = document.createElement('canvas');
   cv.width = CW; cv.height = CH;
   const ctx = cv.getContext('2d');
@@ -77,7 +77,7 @@ function labelSprite(parent, text, x, y, z, hex = '#a0c8e8') {
     map: new THREE.CanvasTexture(cv),
     opacity: 0.92, transparent: true, depthTest: false,
   }));
-  sp.scale.set(32, 6, 1);
+  sp.scale.set(scaleW, 6, 1);
   sp.position.set(x, y, z);
   sp.userData.isLabel = true;
   parent.add(sp);
@@ -114,33 +114,34 @@ function buildElec(parent) {
   // Câble solaire entrant (paroi gauche) → MPPT — visible à travers la vitre
   const pipeMat = new THREE.MeshStandardMaterial({ color: 0xf4d03f, roughness: 0.5, metalness: 0.4 });
   const solarCurve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-EW/2 + 1, EY + 2,   2),
-    new THREE.Vector3(-12,        EY + 2,  -3),
-    new THREE.Vector3( 4,         EY + 1.5, -7),
+    new THREE.Vector3(-EW/2 + 1, EY + 2,    2),  // entrée paroi gauche
+    new THREE.Vector3(-18,        EY + 2.5,  2),  // borne batterie (+)
+    new THREE.Vector3(-10,        EY + 2.5, -4),  // vers centre
+    new THREE.Vector3( 4,         EY + 1.5, -7),  // MPPT
   ]);
   parent.add(new THREE.Mesh(new THREE.TubeGeometry(solarCurve, 12, 0.28, 8, false), pipeMat));
 
-  // Batterie 12V 7Ah SLA (côté droit)
+  // Batterie 12V 7Ah SLA — côté GAUCHE (même côté que panneau solaire)
   edgeLine(parent, bx(parent, 15, 8, 6.5,
     mat(0x1a1a1a, { roughness: 0.88, metalness: 0.05 }),
-    13, EY, 0), 0x424242, 0.65);
-  // Bornes batterie
-  cy(parent, 0.55, 1.0, mat(0xd4af37, { roughness: 0.22, metalness: 0.85 }),  10.5, EH - 0.2, 0, Math.PI/2);
-  cy(parent, 0.55, 1.0, mat(0xc0392b, { roughness: 0.22, metalness: 0.85 }),  15.5, EH - 0.2, 0, Math.PI/2);
+    -13, EY, 0), 0x424242, 0.65);
+  // Bornes batterie (+jaune gauche, -rouge droite)
+  cy(parent, 0.55, 1.0, mat(0xd4af37, { roughness: 0.22, metalness: 0.85 }), -15.5, EH - 0.2, 0, Math.PI/2);
+  cy(parent, 0.55, 1.0, mat(0xc0392b, { roughness: 0.22, metalness: 0.85 }), -10.5, EH - 0.2, 0, Math.PI/2);
 
-  // ESP32 + Relais x4 — PCB vert (centre-gauche)
+  // ESP32 + Relais x4 — PCB vert (côté DROIT)
   edgeLine(parent, bx(parent, 20, 0.35, 13,
     mat(0x2e7d32, { roughness: 0.65, metalness: 0.15 }),
-    -5, EY + 1.5, 0), 0x388e3c, 0.70);
-  // Mini composants sur PCB
+    8, EY + 1.5, 0), 0x388e3c, 0.70);
+  // Mini composants relais sur PCB
   for (let i = 0; i < 4; i++)
     bx(parent, 1.6, 1.2, 1.2,
       mat(0x01579b, { roughness: 0.55, metalness: 0.30 }),
-      -14 + i * 3.5, EY + 2.4, 2.5);
+      -2 + i * 3.5, EY + 2.4, 2.5);
   // ESP32
   bx(parent, 5.5, 0.4, 3.3,
     mat(0x37474f, { roughness: 0.55, metalness: 0.50 }),
-    -2, EY + 2.3, -3.0);
+    10, EY + 2.3, -3.0);
 
   // MPPT (centre-droit, boîtier rouge)
   edgeLine(parent, bx(parent, 7, 4.5, 5,
@@ -193,22 +194,86 @@ function buildPanneau(parent) {
       0.3, 0, 0);
 }
 
-// ── Gouttière Sorbant → Peltier ─────────────────────────────────────
-function buildGouttiereS2P(parent) {
-  pipe(parent, [
-    new THREE.Vector3(-20, Y_SORBANT + 1.5, -18),
-    new THREE.Vector3(-20, Y_PELTIER + 15.5, -18),
-  ], 0.55);
-}
+// ── Réseau eau inter-modules ────────────────────────────────────
+//
+//  Sorbant drain     Peltier drain
+//   (-20,54.4,-21)    (-20,33.85,-24)
+//         \                 /
+//          \  descend      /
+//           \ (continue)  /
+//            └──── T ○ ───┘  ← jonction (-24,25,-20)
+//                   |
+//                   ↓  collecteur
+//              FM filtration
+//            (-25, 23.5, 0)
+//
+const R_INTER = 0.60;
 
-// ── Gouttière Peltier → Filtration ─────────────────────────────────
-function buildGouttiereP2F(parent) {
+function buildFluxEau(parent) {
+  // Points de sortie (coordonnées MONDE) dérivés des modules
+  // Sorbant : sx = -HW+5 = -20, local (gutY-14, gutZ-0.5) = (4.4, -21.3)
+  const SX = -20, SY = Y_SORBANT + 4.4, SZ = -21.3;
+  // Peltier : sx = -20, local (gutY-1.6, -HD-4) = (0.85, -24)
+  const PX = -20, PY = Y_PELTIER + 0.85, PZ = -24;
+  // Jonction T
+  const JX = -24, JY = Y_PELTIER - 8, JZ = -20;
+  // Entrée FM filtration (local -25, pipeY=12.5, 0)
+  const FX = -25, FY = Y_FILTR + 12.5, FZ = 0;
+
+  // ─ Tuyau 1 : suite drain Sorbant → jonction T ──────────
   pipe(parent, [
-    new THREE.Vector3(0, Y_PELTIER + 0.5, -18),
-    new THREE.Vector3(0, Y_PELTIER - 3, -14),
-    new THREE.Vector3(-30, Y_FILTR + 13, -5),
-    new THREE.Vector3(-33, Y_FILTR + 12.5, 0),
-  ], 0.55);
+    new THREE.Vector3(SX, SY,        SZ),
+    new THREE.Vector3(SX, Y_PELTIER + 8, SZ),   // descend longe le Peltier
+    new THREE.Vector3(SX, PY + 2,    SZ),        // arrive niveau drain Peltier
+    new THREE.Vector3(JX, JY,        JZ),         // rejoint la jonction
+  ], R_INTER);
+
+  // ─ Tuyau 2 : suite drain Peltier → jonction T ─────────
+  pipe(parent, [
+    new THREE.Vector3(PX, PY, PZ),
+    new THREE.Vector3(PX, PY, JZ + 2),            // longe vers avant
+    new THREE.Vector3(JX, JY, JZ),                // arrive à la jonction
+  ], R_INTER);
+
+  // ─ Fitting en T — 3 manchons cylindriques inox ───────────
+  const fitMat = mat(0xcfd8dc, { roughness: 0.18, metalness: 0.90 });
+  const colMat = mat(0x90a4ae, { roughness: 0.22, metalness: 0.85 });
+  const R_FIT = R_INTER * 1.55;  // rayon extérieur du corps
+  const R_IN  = R_INTER * 0.85;  // lumière intérieure
+  // Corps principal vertical (Sorbant → collecteur)
+  const bodyV = new THREE.Mesh(
+    new THREE.CylinderGeometry(R_FIT, R_FIT, R_INTER * 6, 16), fitMat);
+  bodyV.position.set(JX, JY, JZ);
+  parent.add(bodyV);
+  // Épaulement collier haut et bas
+  for (const dy of [-R_INTER*2.8, R_INTER*2.8]) {
+    const c = new THREE.Mesh(
+      new THREE.CylinderGeometry(R_FIT+0.3, R_FIT+0.3, 0.7, 16), colMat);
+    c.position.set(JX, JY + dy, JZ); parent.add(c);
+  }
+  // Branche horizontale vers Peltier (axe X)
+  const bodyH = new THREE.Mesh(
+    new THREE.CylinderGeometry(R_FIT, R_FIT, R_INTER * 5, 16), fitMat);
+  bodyH.rotation.z = Math.PI / 2;
+  bodyH.position.set(JX + R_INTER*2, JY, JZ);
+  parent.add(bodyH);
+  // Collier branche
+  const cBr = new THREE.Mesh(
+    new THREE.CylinderGeometry(R_FIT+0.3, R_FIT+0.3, 0.7, 16), colMat);
+  cBr.rotation.z = Math.PI / 2;
+  cBr.position.set(JX + R_INTER*4, JY, JZ); parent.add(cBr);
+  // Bouchon passage lumière (cylindre creux simuler)
+  const lum = new THREE.Mesh(
+    new THREE.CylinderGeometry(R_IN, R_IN, R_INTER * 7, 12),
+    mat(0x1a3a4a, { roughness: 0.1, metalness: 0.0, opacity: 0.40 }));
+  lum.position.set(JX, JY, JZ); parent.add(lum);
+
+  // ─ Tuyau 3 : collecteur jonction T → entrée FM filtration ─
+  pipe(parent, [
+    new THREE.Vector3(JX, JY,      JZ),
+    new THREE.Vector3(FX, FY + 4,  JZ * 0.4),    // monte légèrement pour recadrer
+    new THREE.Vector3(FX, FY,      FZ),           // entrée exacte du FM
+  ], R_INTER);
 }
 
 // ── BUILD PRINCIPAL ────────────────────────────────────────────────
@@ -237,14 +302,13 @@ export function buildAssemblage() {
   // ── Panneau solaire ──────────────────────────────────────────
   buildPanneau(g);
 
-  // ── Gouttières ───────────────────────────────────────────────
-  buildGouttiereS2P(g);
-  buildGouttiereP2F(g);
+  // ── Flux eau inter-modules (réseau unifié Ø0.60) ────────────
+  buildFluxEau(g);
 
   // ── Labels de modules (4 sprites texte) ─────────────────────
   labelSprite(g, 'SORBANT',               0, Y_SORBANT + 30, 32, '#d4a843');
   labelSprite(g, 'PELTIER TEC',           0, Y_PELTIER + 22, 32, '#4ab8e8');
-  labelSprite(g, 'FILTRATION + RÉSERVOIR', 0, Y_FILTR  + 22, 28, '#4db6ac');
+  labelSprite(g, 'FILTRATION + RÉSERVOIR', 0, Y_FILTR  + 22, 28, '#4db6ac', 50);
   labelSprite(g, 'ÉLECTRONIQUE',           0, Y_ELEC   +  8, 28, '#78909c');
 
   return g;

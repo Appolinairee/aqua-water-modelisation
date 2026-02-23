@@ -320,7 +320,7 @@ export function buildPeltier() {
       new THREE.Vector3(sx, gutY - 0.8, -HD - 1),
       new THREE.Vector3(sx, gutY - 1.6, -HD - 4),
     ]);
-    addM(g, new THREE.TubeGeometry(curve, 8, 0.8, 10, false), M.tuyau());
+    addM(g, new THREE.TubeGeometry(curve, 8, 0.60, 10, false), M.tuyau());
   }
 
   return g;
