@@ -8,10 +8,10 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { buildSorbant }     from './modules/sorbant.js';
-import { buildPeltier }     from './modules/peltier.js';
-import { buildFiltration }  from './modules/filtration.js';
-import { buildAssemblage }  from './modules/assemblage.js';
+import { buildSorbant } from "./modules/sorbant.js";
+import { buildPeltier } from "./modules/peltier.js";
+import { buildFiltration } from "./modules/filtration.js";
+import { buildAssemblage } from "./modules/assemblage.js";
 
 // ── Renderer ───────────────────────────────────────
 const canvas = document.getElementById("canvas");
@@ -92,19 +92,18 @@ nappeLight.position.set(0, 7, 0);
 scene.add(nappeLight);
 
 // ── Sol + grille ───────────────────────────────────
-const SOL_SIZE = 2000;
 const sol = new THREE.Mesh(
-  new THREE.PlaneGeometry(SOL_SIZE, SOL_SIZE),
-  new THREE.MeshStandardMaterial({ color: 0xd0d8e4, roughness: 0.95, metalness: 0.0 }),
+  new THREE.PlaneGeometry(1200, 1200),
+  new THREE.MeshStandardMaterial({ color: 0xd8dfe8, roughness: 1.0 }),
 );
 sol.rotation.x = -Math.PI / 2;
-sol.position.y = -0.5;
+sol.position.y = -1;
 sol.receiveShadow = true;
 scene.add(sol);
 
-// Grille couvre exactement le même espace, divisions à 10 cm
-const grid = new THREE.GridHelper(SOL_SIZE, SOL_SIZE / 10, 0x7090aa, 0x9aaec0);
-grid.position.y = -0.48;
+// Grille fine — reste sombre pour contraste
+const grid = new THREE.GridHelper(600, 60, 0x8090a0, 0xa0b0c0);
+grid.position.y = -0.5;
 scene.add(grid);
 
 // ── MODULE PELTIER ──────────────────────────────────
@@ -150,15 +149,18 @@ window.switchModule = (name) => {
   });
 
   // légendes
-  ["legend", "legend-sorbant", "legend-filtration", "legend-assemblage"].forEach(
-    (id) => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = "none";
-    },
-  );
+  [
+    "legend",
+    "legend-sorbant",
+    "legend-filtration",
+    "legend-assemblage",
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
   const legMap = {
-    peltier:    "legend",
-    sorbant:    "legend-sorbant",
+    peltier: "legend",
+    sorbant: "legend-sorbant",
     filtration: "legend-filtration",
     assemblage: "legend-assemblage",
   };
@@ -171,7 +173,7 @@ window.switchModule = (name) => {
   });
 
   // reset caméra
-  if (name === 'assemblage') {
+  if (name === "assemblage") {
     camera.position.set(170, 105, 170);
     controls.target.set(0, 40, 0);
   } else {
